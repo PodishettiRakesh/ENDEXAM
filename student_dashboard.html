@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Course Catalog</title>
+</head>
+<body>
+  <h1>Welcome, Student!</h1>
+  <h2>Available Courses</h2>
+  <ul id="courseList">
+    <!-- Course items will be added dynamically here -->
+  </ul>
+
+  <script src="student.js"></script>
+  <script src="main_student.js"></script>
+  <script>
+    // Define some static courses
+    const courses = [
+      { name: "JavaScript Basics", description: "Introduction to JavaScript programming language" },
+      { name: "Python Fundamentals", description: "Introduction to Python programming language" },
+      { name: "Web Development 101", description: "Basic concepts of web development" }
+    ];
+
+    // Function to add course items to the list
+    function renderCourses() {
+      const courseList = document.getElementById('courseList');
+      courses.forEach(course => {
+        const listItem = document.createElement('li');
+        listItem.innerHTML = `<strong>${course.name}</strong>: ${course.description} <button onclick="enroll('${course.name}')">Enroll</button>`;
+        courseList.appendChild(listItem);
+      });
+    }
+
+    // Call the renderCourses function to display courses
+    renderCourses();
+
+    // Function to simulate enrollment (you'll implement this in main_student.js)
+    function enroll(courseName) {
+      console.log(`Enrolled in course: ${courseName}`);
+    }
+  </script>
+</body>
+</html>
