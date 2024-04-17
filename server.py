@@ -20,45 +20,49 @@ def render_page(page_name):
     headers += html_content
     return headers
 
+from urllib.parse import urlparse, parse_qs, unquote
+
 def handle_request(client_socket):
     data = client_socket.recv(1024).decode()
-    request = data.split('\r\n')
-    request_line = request[0].split()
-    request_type = request_line[0]
-    request_msg = request_line[1]
+    # print("Received data:", data)  # Debugging: Print received data
+    request_lines = data.split('\r\n')
+    if len(request_lines) > 0:
+        request_line = request_lines[0].split()
+        if len(request_line) > 1:
+            request_type = request_line[0]
+            request_url = request_line[1]
+        else:
+            print("Malformed request line:", request_lines[0])
+            return
+    else:
+        print("Empty request received")
+        return
 
-    if request_msg == '/' and request_type == 'GET':
+    # Parse request URL to extract path and query parameters
+    parsed_url = urlparse(request_url)
+    request_path = parsed_url.path
+    query_params = parse_qs(parsed_url.query)
+
+    if request_path == '/' and request_type == 'GET':
         response = render_page('student_login')
         client_socket.send(response.encode())
-    
-    elif request_msg == '/student-login' and request_type == 'POST':
-        # Extract username and password from request body
-        body = request[-1]
-        username = body.split('=')[1].split('&')[0]
-        password = body.split('=')[2]
-        
-        # Check if credentials match student credentials
-        if username == student_credentials['username'] and password == student_credentials['password']:
-            response = "HTTP/1.1 200 OK\r\n\r\nLogin Successful"
-        else:
-            response = "HTTP/1.1 401 Unauthorized\r\n\r\nInvalid credentials"
-        client_socket.send(response.encode())
-
-    elif request_msg == '/teacher-login' and request_type == 'GET':
+    elif request_path == '/student-login' and request_type == 'POST':
+        # Extract username and password from query parameters
+        username = unquote(query_params['username'][0])
+        password = unquote(query_params['password'][0])
+        # Handle student login
+        pass
+    elif request_path == '/teacher-login' and request_type == 'GET':
         response = render_page('teacher_login')
         client_socket.send(response.encode())
-
-    elif request_msg == '/teacher-login' and request_type == 'POST':
-        # Extract username and password from request body
-        body = request[-1]
-        username = body.split('=')[1].split('&')[0]
-        password = body.split('=')[2]
-        
-        # Check if credentials match teacher credentials
-        if username == teacher_credentials['username'] and password == teacher_credentials['password']:
-            response = "HTTP/1.1 200 OK\r\n\r\nLogin Successful"
-        else:
-            response = "HTTP/1.1 401 Unauthorized\r\n\r\nInvalid credentials"
+    elif request_path == '/teacher-login' and request_type == 'POST':
+        # Extract username and password from query parameters
+        username = unquote(query_params['username'][0])
+        password = unquote(query_params['password'][0])
+        # Handle teacher login
+        pass
+    else:
+        response = "HTTP/1.1 404 Not Found\r\n\r\n404 Not Found"
         client_socket.send(response.encode())
 
 while True:
